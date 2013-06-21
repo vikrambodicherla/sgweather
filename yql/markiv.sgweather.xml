@@ -10,16 +10,16 @@
         </inputs>
         <execute>
             <![CDATA[
-                var data = {};
+                var respData = {};
 
                 if(data.indexOf('nowcast') > -1){
                     var nowcastRss = y.query('http://www.weather.gov.sg/wip/pp/rndops/web/rss/rssNcast_NEW.xml#sthash.Oj9mHS9h.dpuf').rest;
                     var entry = nowcastRss.feed.entry;
 
-                    data.nowcast = entry;
+                    respData.nowcast = entry;
                 }
 
-                response.object = data;
+                response.object = respData;
             ]]>
         </execute>
      </bindings>
