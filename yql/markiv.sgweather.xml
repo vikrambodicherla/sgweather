@@ -25,8 +25,15 @@
                     
                         var response = null;
                         while(tries < options.retries){
-                            var result = y.rest(url).get();
-                            if(!result.timeout && result.status == 200){
+                            var result = null;
+                            try{
+                                result = y.rest(url).get();
+                            }
+                            catch(e){
+                                y.log('Get error: ' + e);
+                                result = null;
+                            }
+                            if(result && !result.timeout && result.status == 200){
                                 response = result.response;
                                 break;
                             }
