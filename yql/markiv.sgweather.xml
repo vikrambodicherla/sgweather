@@ -26,7 +26,7 @@
                         var response = null;
                         while(tries < options.retries){
                             var result = y.rest(url).get();
-                            if(result.status == 200){
+                            if(!result.timeout && result.status == 200){
                                 response = result.response;
                                 break;
                             }
