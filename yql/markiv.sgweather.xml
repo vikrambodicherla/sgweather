@@ -30,7 +30,8 @@
                                 response = result.response;
                                 break;
                             }
-                            retries++;
+                            y.log('Retrying ' + (tries + 1) + ' time...');
+                            tries++;
                         }
               
                         return response;
