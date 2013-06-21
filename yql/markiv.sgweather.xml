@@ -14,7 +14,7 @@
                     var respData = {};
     
                     if(data.indexOf('nowcast') > -1){
-                        var nowcastRss = y.query('http://www.weather.gov.sg/wip/pp/rndops/web/rss/rssNcast_NEW.xml#sthash.Oj9mHS9h.dpuf').rest;
+                        var nowcastRss = y.query('http://www.weather.gov.sg/wip/pp/rndops/web/rss/rssNcast_NEW.xml#sthash.Oj9mHS9h.dpuf').results;
                         var entry = nowcastRss.feed.entry;
     
                         respData.nowcast = entry;
