@@ -2,25 +2,64 @@
 <table xmlns="http://query.yahooapis.com/v1/schema/table.xsd">
     <meta>
         <author>Vikram Bodicherla</author>
-        <sampleQuery>select * from {table} where data in ('news', 'nowcase','further_outlook', '3_day_outlook', 'psi_update', 'heavy_rain_warning')</sampleQuery>
+        <sampleQuery>select * from {table} where data in ('nowcast','twelve-hour-forecast', 'three-day-forecast', 'psi-update', 'heavy-rain-warning')</sampleQuery>
     </meta>
     <bindings>
-        <inputs>
-            <key id='data' type='xs:string' paramType='query' required='true'/>
-        </inputs>
-        <execute>
-            <![CDATA[
-                var data = {};
+        <select>
+            <inputs>
+                <key id='data' batchable='true' type='xs:string' paramType='query' required='true'/>
+            </inputs>
+            <execute>
+                <![CDATA[
+                    var urls = {
+                        'nowcast': 'http://www.weather.gov.sg/wip/pp/rndops/web/rss/rssNcast_NEW.xml',
+                        'twelve-hour-forecast': 'http://www.weather.gov.sg/wip/pp/rndops/web/rss/rssForecast_new.xml',
+                        'three-day-forecast': 'http://www.weather.gov.sg/wip/pp/rndops/web/rss/3Day_RSS.xml',
+                        'psi-update': 'http://app2.nea.gov.sg/data/rss/nea_psi.xml',
+                        'heavy-rain-warnings': 'http://www.weather.gov.sg/wip/pp/rndops/web/rss/rssHeavyRain_new.xml'
+                    };
+                                  
+                    var getter = function(url, options){
+                        var tries = 0;
+                    options = options || {retries: 1};
+                    
+                    var response = null;
+                    while(tries < options.retries){
+                        var result = y.rest(url).get();
+                        if(result.status == 200){
+                        response = result.response;
+                        break;
+                        }
+                        retries++;
+                    }
+              
+                    return response;
+                    };
+              
+                    var respData = {};
 
-                if(data.indexOf('nowcast') > -1){
-                    var nowcastRss = y.query('http://www.weather.gov.sg/wip/pp/rndops/web/rss/rssNcast_NEW.xml#sthash.Oj9mHS9h.dpuf').rest;
-                    var entry = nowcastRss.feed.entry;
+                    if(data.indexOf('psi-update') > -1){
+                        //Add psi data
+                    }
 
-                    data.nowcast = entry;
-                }
+                    y.log(data);
+                
+                    for(var i = 0, length = data.length; i < length; i++){
+                    y.log(data[i] + ' ' + urls[data[i]]);
+                        if(data[i] !== 'psi-update'){
+                        fetchSummary(data[i], urls[data[i]]);
+                        }
+                    }
 
-                response.object = data;
-            ]]>
-        </execute>
-     </bindings>
+                    function fetchSummary(element, url){
+                    y.log('Fetching ' + element + ' from ' + url);
+                        var rss = getter(url, {retries: 3});
+                        respData[element] = y.xmlToJson(rss).feed.entry.summary;
+                    }
+
+                    response.object = respData;
+                ]]>
+            </execute>
+        </select>
+    </bindings>
 </table>
