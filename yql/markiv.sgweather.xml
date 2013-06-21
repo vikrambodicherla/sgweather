@@ -21,43 +21,61 @@
                                   
                     var getter = function(url, options){
                         var tries = 0;
-                    options = options || {retries: 1};
+                        options = options || {retries: 1};
                     
-                    var response = null;
-                    while(tries < options.retries){
-                        var result = y.rest(url).get();
-                        if(result.status == 200){
-                        response = result.response;
-                        break;
+                        var response = null;
+                        while(tries < options.retries){
+                            var result = y.rest(url).get();
+                            if(result.status == 200){
+                                response = result.response;
+                                break;
+                            }
+                            retries++;
                         }
-                        retries++;
-                    }
               
-                    return response;
+                        return response;
                     };
+
+                    y.log(data);
               
                     var respData = {};
 
                     if(data.indexOf('psi-update') > -1){
-                        //Add psi data
+                        fetchPsiData();
                     }
-
-                    y.log(data);
                 
                     for(var i = 0, length = data.length; i < length; i++){
-                    y.log(data[i] + ' ' + urls[data[i]]);
+                        y.log(data[i] + ' ' + urls[data[i]]);
                         if(data[i] !== 'psi-update'){
-                        fetchSummary(data[i], urls[data[i]]);
+                            fetchSummary(data[i], urls[data[i]]);
                         }
+                    }
+              
+                    function fetchPsiData(){
+                        //Add psi data
+                        var url = urls['psi-update'];
+                        y.log('Fetching psi-update from ' + url);
+                    
+                        var rss = getter(url, {retries: 3});
+                        var rssItems = y.xmlToJson(rss).rss.channel.item;
+                    
+                        var psiElements = [];
+                        if(rssItems){
+                            for(var i = 0, length = rssItems.length; i < length; i++){
+                                var rssItem = rssItems[i];
+                                psiElements.push({psi: rssItem.psi, pubDate: rssItem.pubDate});
+                            }                       
+                        }   
+                        respData['psi-update'] = psiElements;
                     }
 
                     function fetchSummary(element, url){
-                    y.log('Fetching ' + element + ' from ' + url);
+                        y.log('Fetching ' + element + ' from ' + url);
                         var rss = getter(url, {retries: 3});
                         respData[element] = y.xmlToJson(rss).feed.entry.summary;
                     }
 
-                    response.object = respData;
+                    response.object = {data: respData};
                 ]]>
             </execute>
         </select>
